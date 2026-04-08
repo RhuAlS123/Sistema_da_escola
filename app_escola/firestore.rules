@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Perfil do usuário logado (mesmo UID do Authentication).
+    match /usuarios/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      // Escrita ainda via Console ou etapas futuras com regras por papel.
+      allow create, update, delete: if false;
+    }
+
+    match /alunos/{alunoId} {
+      allow read, create, update: if request.auth != null;
+      // Escopo: só administrador exclui aluno (Fase 6 reforça no app).
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,46 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+
+# Flutter / Dart (app_escola e subpastas)
+**/.dart_tool/
+**/.flutter-plugins-dependencies
+**/build/
+**/doc/api/
+**/coverage/
+*.class
+*.log
+*.pyc
+*.swp
+.pub-cache/
+.pub/
+
+# Android
+**/android/.gradle/
+**/android/captures/
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+**/android/key.properties
+*.jks
+*.keystore
+
+# iOS / macOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral/
+**/macos/Flutter/ephemeral/
+
+# Web
+**/web/.dart_tool/
+
+# Outros
+*.symbols
+*.map.json
+migrate_working_dir/
