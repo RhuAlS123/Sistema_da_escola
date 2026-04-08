@@ -44,3 +44,6 @@ Thumbs.db
 *.symbols
 *.map.json
 migrate_working_dir/
+
+# Pastas locais de histórico / IDE (não versionar)
+historico-cursor/
