@@ -47,6 +47,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  flutter_launcher_icons: ^0.14.4
+
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
@@ -93,3 +95,17 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Ícones do launcher (Android) e PWA/Web a partir da logo da marca.
+# Rodar: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: false
+  web:
+    generate: true
+    image_path: assets/branding/sis_icpro_logo.png
+    background_color: "#1B3A5C"
+    theme_color: "#1B3A5C"
+  image_path: assets/branding/sis_icpro_logo.png
+  adaptive_icon_background: "#1B3A5C"
+  adaptive_icon_foreground: assets/branding/sis_icpro_logo.png

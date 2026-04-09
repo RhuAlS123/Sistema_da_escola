@@ -14,6 +14,18 @@ flutter run -d chrome
 
 Firebase: o projeto inclui `lib/firebase_options.dart`. Noutro PC, se precisar reconfigurar, siga **`SETUP_FIREBASE.md`**.
 
+## Marca e ícone do app (launcher / PWA)
+
+A logo usada na barra do app e nos ícones é **`assets/branding/sis_icpro_logo.png`**.
+
+Depois de trocar essa imagem, regenere os ícones Android e Web:
+
+```bash
+dart run flutter_launcher_icons
+```
+
+Depois faça um novo build (`flutter build apk`, `flutter build web`, etc.).
+
 ## Build de produção
 
 | Plataforma | Comando |

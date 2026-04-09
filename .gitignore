@@ -44,6 +44,9 @@ Thumbs.db
 **/firebase-adminsdk-*.json
 **/serviceAccount*.json
 
+# Firebase CLI cache local
+**/.firebase/
+
 # Node (ex.: app_escola/tools/seed_usuarios)
 **/node_modules/
 
