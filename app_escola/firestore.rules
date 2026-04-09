@@ -2,18 +2,37 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Perfil do usuário logado (mesmo UID do Authentication).
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /// Perfil em `usuarios/{uid}` — precisa existir para checagem de admin segura.
+    function usuarioDocPath() {
+      return /databases/$(database)/documents/usuarios/$(request.auth.uid);
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(usuarioDocPath())
+        && get(usuarioDocPath()).data.role == 'admin';
+    }
+
+    // --- usuarios: leitura do próprio documento (role para a UI); escrita só console/seed.
     match /usuarios/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      // Escrita ainda via Console ou etapas futuras com regras por papel.
+      allow read: if isSignedIn() && request.auth.uid == userId;
       allow create, update, delete: if false;
     }
 
+    // --- alunos: CRUD operacional; exclusão do documento só admin (PASSOS Fase 6).
     match /alunos/{alunoId} {
-      allow read, create, update: if request.auth != null;
-      // Escopo: só administrador exclui aluno (Fase 6 reforça no app).
-      allow delete: if request.auth != null &&
-        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'admin';
+      allow read, create, update: if isSignedIn();
+      allow delete: if isAdmin();
+
+      // Subcoleção: colaboradores precisam apagar parcelas ao recalcular contrato (batch).
+      // Exclusão do aluno (cascata) não é feita pelo app — só remove docs `alunos/{id}` como admin.
+      match /parcelas/{parcelaId} {
+        allow read, create, update, delete: if isSignedIn();
+      }
     }
 
     match /{document=**} {

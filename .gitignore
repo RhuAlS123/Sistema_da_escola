@@ -40,6 +40,18 @@ Thumbs.db
 # Web
 **/web/.dart_tool/
 
+# Firebase Admin (scripts locais; nunca versionar chaves)
+**/firebase-adminsdk-*.json
+**/serviceAccount*.json
+
+# Node (ex.: app_escola/tools/seed_usuarios)
+**/node_modules/
+
+# Variáveis de ambiente locais (se passar a usar)
+.env
+.env.*
+!.env.example
+
 # Outros
 *.symbols
 *.map.json

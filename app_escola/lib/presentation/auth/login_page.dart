@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/auth/fixed_auth_mapping.dart';
 import '../../core/branding/app_brand.dart';
+import '../../core/errors/app_error_messages.dart';
 import '../providers/app_providers.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -55,7 +56,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       return;
     } catch (e) {
       setState(() {
-        _errorMessage = 'Não foi possível entrar: $e';
+        _errorMessage = mensagemErroParaUsuario(e);
         _loading = false;
       });
       return;
@@ -82,6 +83,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             '(ver SETUP_USUARIOS.md).$suffix';
       case 'too-many-requests':
         return 'Muitas tentativas. Aguarde alguns minutos e tente de novo.$suffix';
+      case 'network-request-failed':
+        return 'Sem conexão ou rede instável. Verifique e tente de novo.$suffix';
       default:
         return '${e.message ?? 'Erro de autenticação'} (${e.code})$suffix';
     }

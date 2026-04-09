@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/layout/app_breakpoints.dart';
 import '../cadastro_geral/cadastro_geral_page.dart';
-import '../financeiro/cadastro_financeiro_placeholder_page.dart';
-import '../parcelas/controle_parcelas_placeholder_page.dart';
-import '../relatorios/relatorios_placeholder_page.dart';
+import '../financeiro/cadastro_financeiro_page.dart';
+import '../parcelas/controle_parcelas_page.dart';
+import '../relatorios/relatorios_page.dart';
 import '../providers/app_providers.dart';
 
 /// Corpo das guias (sem [Scaffold] — o pai fornece AppBar / BottomNavigation).
@@ -22,7 +23,9 @@ class AppMainShellBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final index =
         ref.watch(mainTabIndexProvider).clamp(0, destinos.length - 1);
-    final wide = MediaQuery.sizeOf(context).width >= 800;
+    final w = MediaQuery.sizeOf(context).width;
+    // Tablet/desktop: NavigationRail; telefone: NavigationBar no scaffold pai.
+    final wide = !AppBreakpoints.isMobileWidth(w);
 
     if (wide) {
       return Row(
@@ -94,9 +97,9 @@ class _TabBody extends StatelessWidget {
       sizing: StackFit.expand,
       children: const [
         CadastroGeralPage(),
-        CadastroFinanceiroPlaceholderPage(),
-        ControleParcelasPlaceholderPage(),
-        RelatoriosPlaceholderPage(),
+        CadastroFinanceiroPage(),
+        ControleParcelasPage(),
+        RelatoriosPage(),
       ],
     );
   }

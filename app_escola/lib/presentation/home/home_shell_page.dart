@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/domain.dart';
 import '../../core/branding/app_brand.dart';
+import '../../core/layout/app_breakpoints.dart';
+import '../../domain/domain.dart';
 import '../providers/app_providers.dart';
 import '../shell/app_main_shell.dart';
 
@@ -20,7 +21,7 @@ class HomeShellPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(userProfileProvider);
-    final wide = MediaQuery.sizeOf(context).width >= 800;
+    final wide = !AppBreakpoints.isMobileWidth(MediaQuery.sizeOf(context).width);
 
     return Scaffold(
       appBar: AppBar(

@@ -33,6 +33,50 @@ final alunosResumoProvider = StreamProvider<List<AlunoResumo>>(
   (ref) => ref.watch(alunoRepositoryProvider).watchResumosOrdenados(),
 );
 
+/// Parcelas na subcoleção `alunos/{id}/parcelas` (PASSOS §5.3 — tempo real).
+final parcelasDoAlunoProvider =
+    StreamProvider.autoDispose.family<List<ParcelaGerada>, String>(
+  (ref, alunoId) =>
+      ref.watch(alunoRepositoryProvider).watchParcelasGeradas(alunoId),
+);
+
+/// Contrato financeiro do aluno (juros diário, etc. — Fase 4).
+final financeiroContratoDoAlunoProvider =
+    FutureProvider.autoDispose.family<FinanceiroContrato?, String>(
+  (ref, alunoId) =>
+      ref.watch(alunoRepositoryProvider).obterFinanceiro(alunoId),
+);
+
+/// Mês/ano de competência para relatórios **Pagantes** e **Em dia** (§5.4).
+final relatorioMesReferenciaProvider = StateProvider<DateTime>((ref) {
+  final n = DateTime.now();
+  return DateTime(n.year, n.month, 1);
+});
+
+final relatorioDebitoProvider = FutureProvider.autoDispose((ref) {
+  return ref.watch(alunoRepositoryProvider).listarAlunosEmDebito();
+});
+
+/// Aniversariantes do **mês civil atual** (documento de passos).
+final relatorioAniversariantesProvider = FutureProvider.autoDispose((ref) {
+  final n = DateTime.now();
+  return ref.watch(alunoRepositoryProvider).listarAniversariantesDoMes(n.month);
+});
+
+final relatorioPagantesMesProvider = FutureProvider.autoDispose((ref) {
+  final d = ref.watch(relatorioMesReferenciaProvider);
+  return ref
+      .watch(alunoRepositoryProvider)
+      .listarAlunosPagantesNoMes(d.month, d.year);
+});
+
+final relatorioEmDiaMesProvider = FutureProvider.autoDispose((ref) {
+  final d = ref.watch(relatorioMesReferenciaProvider);
+  return ref
+      .watch(alunoRepositoryProvider)
+      .listarAlunosEmDiaNoMes(d.month, d.year);
+});
+
 /// Estado de sessão Firebase Auth.
 final authStateProvider = StreamProvider<User?>(
   (ref) => ref.watch(authRepositoryProvider).authStateChanges(),

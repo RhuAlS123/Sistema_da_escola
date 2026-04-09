@@ -1,5 +1,9 @@
 /// Larguras de referência para layout responsivo (PC vs mobile).
 /// Valores convencionais; não há número “oficial” na especificação do cliente.
+///
+/// O shell principal usa [isMobileWidth] para alternar barra inferior / trilho lateral
+/// (`app_main_shell.dart`). Em `app.dart`, o [MaterialApp] limita escala de texto
+/// com [minTextScale] / [maxTextScale].
 class AppBreakpoints {
   AppBreakpoints._();
 

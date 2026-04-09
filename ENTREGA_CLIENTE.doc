@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Entrega ao cliente — SIS Icpro</title>
+  <style>
+    body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+    h1 { font-size: 18pt; margin: 0 0 12pt; }
+    h2 { font-size: 13pt; margin: 16pt 0 6pt; }
+    p { margin: 0 0 8pt; }
+    ul, ol { margin: 0 0 10pt 18pt; }
+    li { margin: 0 0 4pt; }
+    code { font-family: Consolas, "Courier New", monospace; font-size: 10pt; }
+    .divider { border-top: 1px solid #d0d0d0; margin: 12pt 0; }
+  </style>
+</head>
+<body>
+  <h1>SIS Icpro — Como acessar</h1>
+
+  <p><b>iPhone/iPad (iOS):</b> usar pelo Safari (Web App).</p>
+  <p><b>Android:</b> instalar o aplicativo (APK).</p>
+
+  <div class="divider"></div>
+
+  <h2>iPhone / iPad (iOS) — Web App (PWA)</h2>
+  <p><b>Link do sistema:</b> <a href="https://app-escola-fda78.web.app">https://app-escola-fda78.web.app</a></p>
+  <ol>
+    <li>Abra o link no <b>Safari</b>.</li>
+    <li>Toque em <b>Compartilhar</b> → <b>Adicionar à Tela de Início</b>.</li>
+    <li>Abra o sistema pelo ícone que será criado.</li>
+  </ol>
+
+  <div class="divider"></div>
+
+  <h2>Android — Instalar o App (APK)</h2>
+  <ol>
+    <li>Baixe o arquivo <b><code>app-release.apk</code></b> (enviado no Drive).</li>
+    <li>Abra o arquivo para instalar.</li>
+    <li>Se aparecer bloqueio de segurança, habilite <b>Permitir desta fonte</b> e tente novamente.</li>
+  </ol>
+
+  <div class="divider"></div>
+
+  <h2>Login</h2>
+  <p>Use o e-mail e a senha fornecidos (Administrador ou Colaborador).</p>
+</body>
+</html>
+

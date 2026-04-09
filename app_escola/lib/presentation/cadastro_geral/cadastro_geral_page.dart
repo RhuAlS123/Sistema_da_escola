@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
+import '../../core/errors/app_error_messages.dart';
 import '../../domain/domain.dart';
 import '../providers/app_providers.dart';
 
-/// PASSOS 5.1 — máscaras, responsável + aluno, idade, Localizar, salvar → financeiro.
+/// PASSOS 5.1 — máscaras, responsável + aluno, idade, Localizar, salvar → financeiro,
+/// autosave ao trocar de guia (dados válidos do 1.º passo).
 class CadastroGeralPage extends ConsumerStatefulWidget {
   const CadastroGeralPage({super.key});
 
@@ -30,6 +32,7 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
 
   String? _editingAlunoId;
   bool _salvando = false;
+  bool _dirty = false;
 
   final _cpfMask = MaskTextInputFormatter(
     mask: '###.###.###-##',
@@ -52,9 +55,15 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
     super.dispose();
   }
 
+  void _marcarDirty() {
+    if (!_dirty) setState(() => _dirty = true);
+  }
+
   void _novoAluno() {
+    ref.read(alunoSelecionadoIdProvider.notifier).state = null;
     setState(() {
       _editingAlunoId = null;
+      _dirty = false;
       _nomeResp.clear();
       _tel.clear();
       _cpf.clear();
@@ -87,8 +96,10 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
     final repo = ref.read(alunoRepositoryProvider);
     final dados = await repo.obterDadosPessoais(id);
     if (!mounted || dados == null) return;
+    ref.read(alunoSelecionadoIdProvider.notifier).state = id;
     setState(() {
       _editingAlunoId = id;
+      _dirty = false;
       _nomeResp.text = dados.nomeResponsavel;
       _tel.text = dados.telefone;
       _cpf.text = dados.cpf;
@@ -119,6 +130,64 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
     );
   }
 
+  Future<bool> _persistirCadastro({required bool navegarParaFinanceiro}) async {
+    final dados = _montarDados();
+    if (!dados.podeSalvarPrimeiroPasso) return false;
+
+    setState(() => _salvando = true);
+    try {
+      final repo = ref.read(alunoRepositoryProvider);
+      final id = _editingAlunoId;
+      if (id == null) {
+        final novoId = await repo.criar(dados);
+        ref.read(alunoSelecionadoIdProvider.notifier).state = novoId;
+        if (mounted) {
+          setState(() {
+            _editingAlunoId = novoId;
+            _dirty = false;
+          });
+        }
+      } else {
+        await repo.atualizar(id, dados);
+        ref.read(alunoSelecionadoIdProvider.notifier).state = id;
+        if (mounted) setState(() => _dirty = false);
+      }
+      if (!mounted) return true;
+      if (navegarParaFinanceiro) {
+        ref.read(mainTabIndexProvider.notifier).state = 1;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Salvo. Cadastro financeiro — próxima guia.'),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cadastro geral salvo automaticamente.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return true;
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mensagemErroParaUsuario(e))),
+        );
+      }
+      return false;
+    } finally {
+      if (mounted) setState(() => _salvando = false);
+    }
+  }
+
+  Future<void> _autosaveSeNecessario() async {
+    if (!mounted || !_dirty || _salvando) return;
+    final dados = _montarDados();
+    if (!dados.podeSalvarPrimeiroPasso) return;
+    await _persistirCadastro(navegarParaFinanceiro: false);
+  }
+
   Future<void> _salvar() async {
     final dados = _montarDados();
     if (!dados.podeSalvarPrimeiroPasso) {
@@ -132,32 +201,7 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
       );
       return;
     }
-
-    setState(() => _salvando = true);
-    try {
-      final repo = ref.read(alunoRepositoryProvider);
-      final id = _editingAlunoId;
-      if (id == null) {
-        final novoId = await repo.criar(dados);
-        ref.read(alunoSelecionadoIdProvider.notifier).state = novoId;
-      } else {
-        await repo.atualizar(id, dados);
-        ref.read(alunoSelecionadoIdProvider.notifier).state = id;
-      }
-      if (!mounted) return;
-      ref.read(mainTabIndexProvider.notifier).state = 1;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Salvo. Cadastro financeiro — próxima guia.')),
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao salvar: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _salvando = false);
-    }
+    await _persistirCadastro(navegarParaFinanceiro: true);
   }
 
   Future<void> _pickData({required bool responsavel}) async {
@@ -177,6 +221,7 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
         } else {
           _nascAluno = d;
         }
+        _dirty = true;
       });
     }
   }
@@ -186,6 +231,11 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(mainTabIndexProvider, (prev, next) {
+      if (prev != 0 || next == 0) return;
+      Future.microtask(() => _autosaveSeNecessario());
+    });
+
     final refDate = DateTime.now();
     final idade = idadeEmAnosCompleta(_nascAluno, refDate);
 
@@ -223,6 +273,7 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _nomeResp,
+                onChanged: (_) => _marcarDirty(),
                 decoration: const InputDecoration(
                   labelText: 'Nome',
                   border: OutlineInputBorder(),
@@ -231,6 +282,7 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _tel,
+                onChanged: (_) => _marcarDirty(),
                 inputFormatters: [_telMask],
                 keyboardType: TextInputType.phone,
                 decoration: const InputDecoration(
@@ -241,6 +293,7 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _cpf,
+                onChanged: (_) => _marcarDirty(),
                 inputFormatters: [_cpfMask],
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
@@ -251,6 +304,7 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _rg,
+                onChanged: (_) => _marcarDirty(),
                 decoration: const InputDecoration(
                   labelText: 'RG',
                   border: OutlineInputBorder(),
@@ -268,6 +322,7 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _endereco,
+                onChanged: (_) => _marcarDirty(),
                 decoration: const InputDecoration(
                   labelText: 'Endereço',
                   border: OutlineInputBorder(),
@@ -276,6 +331,7 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _cidade,
+                onChanged: (_) => _marcarDirty(),
                 decoration: const InputDecoration(
                   labelText: 'Cidade',
                   border: OutlineInputBorder(),
@@ -293,13 +349,19 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
                   for (final p in parentescoOpcoesIniciais)
                     DropdownMenuItem(value: p, child: Text(p)),
                 ],
-                onChanged: (v) => setState(() => _parentesco = v ?? _parentesco),
+                onChanged: (v) {
+                  setState(() {
+                    _parentesco = v ?? _parentesco;
+                    _dirty = true;
+                  });
+                },
               ),
               const SizedBox(height: 24),
               Text('Aluno', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _nomeAluno,
+                onChanged: (_) => _marcarDirty(),
                 decoration: const InputDecoration(
                   labelText: 'Nome do aluno',
                   border: OutlineInputBorder(),
@@ -419,7 +481,18 @@ class _LocalizarAlunoSheetState extends ConsumerState<_LocalizarAlunoSheet> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Erro: $e')),
+              error: (e, _) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SelectableText(
+                    mensagemErroParaUsuario(e),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ],

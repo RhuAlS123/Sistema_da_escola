@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/errors/app_error_messages.dart';
 import '../../core/firebase/app_firebase.dart';
 import '../home/firebase_required_page.dart';
 import '../providers/app_providers.dart';
@@ -35,7 +36,7 @@ class AuthGate extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: SelectableText(
-              'Erro ao observar sessão: $err',
+              mensagemErroParaUsuario(err),
               textAlign: TextAlign.center,
             ),
           ),
