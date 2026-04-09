@@ -3,7 +3,7 @@
 /// O Firebase Auth com **e-mail e senha** exige um e-mail único por usuário.
 /// A especificação não define e-mails; usa-se **mapeamento interno** usuário → e-mail.
 /// Os valores abaixo são esse mapeamento: cadastre **os mesmos e-mails** no console
-/// (ver `app_escola/SETUP_USUARIOS.md`). As senhas continuam sendo as do documento de escopo
+/// (ver secção Firebase deste README). As senhas continuam sendo as do documento de escopo
 /// (digitadas no login), **não** armazenadas no código.
 enum FixedAccount {
   colaborador1,

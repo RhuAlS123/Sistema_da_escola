@@ -80,7 +80,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         return 'Senha não confere com o cadastro no Firebase Authentication, '
             'ou o e-mail não existe. No Console, confira o usuário ou use '
             '"Redefinir senha" / exclua e crie de novo com a senha do escopo '
-            '(ver SETUP_USUARIOS.md).$suffix';
+            '(confira o utilizador no Console e a coleção usuarios no Firestore; ver README).$suffix';
       case 'too-many-requests':
         return 'Muitas tentativas. Aguarde alguns minutos e tente de novo.$suffix';
       case 'network-request-failed':

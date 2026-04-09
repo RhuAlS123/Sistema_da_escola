@@ -24,7 +24,7 @@ Future<void> initializeAppFirebase() async {
     if (kDebugMode) {
       debugPrint(
         '[Firebase] Sem credenciais: execute `flutterfire configure` em app_escola '
-        '(SETUP_FIREBASE.md).',
+        '(ver README).',
       );
     }
   } catch (e, st) {

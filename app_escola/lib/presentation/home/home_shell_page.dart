@@ -115,7 +115,7 @@ class _ProfileErrorBody extends StatelessWidget {
                     ? 'O login funcionou, mas as regras de segurança do Firestore '
                         'não permitem ler usuarios/{seu uid}. Abra o Firebase → '
                         'Firestore → Regras e publique as regras do arquivo '
-                        'app_escola/firestore.rules (veja SETUP_USUARIOS.md).'
+                        'app_escola/firestore.rules (ver README em app_escola).'
                     : message,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
@@ -158,7 +158,7 @@ class _MissingProfileMessage extends StatelessWidget {
               Text(
                 'Crie na coleção usuarios um documento cujo ID seja exatamente o '
                 'seu UID (abaixo), com os campos nome (texto) e role (admin ou '
-                'colab). Detalhes em SETUP_USUARIOS.md.',
+                'colab). Instruções no README em app_escola.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),

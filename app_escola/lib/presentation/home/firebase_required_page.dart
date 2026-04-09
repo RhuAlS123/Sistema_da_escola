@@ -36,9 +36,9 @@ class FirebaseRequiredPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Configure as credenciais do seu projeto: em app_escola, siga '
-                  'SETUP_FIREBASE.md e execute `flutterfire configure` para '
-                  'gerar lib/firebase_options.dart.',
+                  'Configure as credenciais do projeto: em app_escola execute '
+                  '`flutterfire configure` para gerar lib/firebase_options.dart '
+                  '(instruções no README da pasta app_escola).',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,

@@ -57,6 +57,10 @@ ENTREGA_CLIENTE.doc
 ENTREGA_CLIENTE.md
 PASSOS-IMPLEMENTACAO.md
 
+# Documentação longa opcional em app_escola (conteúdo resumido no README)
+app_escola/SETUP_FIREBASE.md
+app_escola/SETUP_USUARIOS.md
+
 # Variáveis de ambiente locais (se passar a usar)
 .env
 .env.*
