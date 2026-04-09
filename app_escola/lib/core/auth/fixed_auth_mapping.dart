@@ -1,10 +1,9 @@
 /// Contas fixas do escopo (nomes e papéis vêm da especificação).
 ///
 /// O Firebase Auth com **e-mail e senha** exige um e-mail único por usuário.
-/// A especificação não define e-mails; o [PASSOS-IMPLEMENTACAO.md] na raiz do
-/// repositório prevê **mapeamento interno** usuário → e-mail. Os valores abaixo
-/// são esse mapeamento: cadastre **os mesmos e-mails** no console (ver
-/// `SETUP_USUARIOS.md`). As senhas continuam sendo as do documento de escopo
+/// A especificação não define e-mails; usa-se **mapeamento interno** usuário → e-mail.
+/// Os valores abaixo são esse mapeamento: cadastre **os mesmos e-mails** no console
+/// (ver `app_escola/SETUP_USUARIOS.md`). As senhas continuam sendo as do documento de escopo
 /// (digitadas no login), **não** armazenadas no código.
 enum FixedAccount {
   colaborador1,
