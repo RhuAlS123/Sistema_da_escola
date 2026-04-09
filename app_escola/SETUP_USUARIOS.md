@@ -55,6 +55,7 @@ Requisitos: [Node.js](https://nodejs.org/) 18+ e uma **chave de conta de serviç
    ```powershell
    cd app_escola\tools\seed_usuarios
    npm install
+   (Gera `package-lock.json` localmente; não é obrigatório versionar.)
    ```
 
 3. Defina as **mesmas** senhas que vai usar no app (apenas no terminal, não em ficheiros no repositório):

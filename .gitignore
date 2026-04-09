@@ -49,6 +49,10 @@ Thumbs.db
 
 # Node (ex.: app_escola/tools/seed_usuarios)
 **/node_modules/
+app_escola/tools/seed_usuarios/package-lock.json
+
+# PDFs locais de entrega (opcional; não versionar por defeito)
+ENTREGA_CLIENTE.pdf
 
 # Variáveis de ambiente locais (se passar a usar)
 .env
