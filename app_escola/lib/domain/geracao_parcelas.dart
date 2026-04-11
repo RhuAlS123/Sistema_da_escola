@@ -15,6 +15,14 @@ int _reaisParaCentavos(double v) => (v * 100).round();
 
 double _centavosParaReais(int c) => c / 100.0;
 
+/// Fator integral ÷ promo nas referências do contrato (opcional).
+double? _fatorValorIntegral(FinanceiroContrato c) {
+  final a = c.refValorMensalPromo;
+  final b = c.refValorMensalIntegral;
+  if (a <= 0 || b <= a + 1e-6) return null;
+  return b / a;
+}
+
 /// Distribui o total em centavos em [n] parcelas; o resto vai para a última.
 List<int> _distribuirCentavos(int totalCentavos, int n) {
   if (n <= 0) {
@@ -39,12 +47,18 @@ List<ParcelaGerada> gerarParcelasApartirDoContrato(FinanceiroContrato c) {
   final totalCentavos = _reaisParaCentavos(c.saldoFinanciado);
   final n = c.duracaoMeses;
   final valores = _distribuirCentavos(totalCentavos, n);
+  final fatorIntegral = _fatorValorIntegral(c);
   return List.generate(n, (i) {
     final venc = addMonths(c.dataPrimeiroVencimento, i);
+    final promoCent = valores[i];
+    final integralCent = fatorIntegral == null
+        ? 0
+        : (promoCent * fatorIntegral).round();
     return ParcelaGerada(
       numero: i + 1,
       vencimento: venc,
-      valor: _centavosParaReais(valores[i]),
+      valor: _centavosParaReais(promoCent),
+      valorIntegral: _centavosParaReais(integralCent),
       status: ParcelaGerada.statusPendente,
     );
   });

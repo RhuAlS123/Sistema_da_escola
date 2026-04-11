@@ -6,6 +6,8 @@ class FinanceiroContrato {
     required this.pacoteOutrosDetalhe,
     required this.turmaTecnologia,
     required this.turmaIngles,
+    this.turmaHorarioTecnologia = '',
+    this.turmaHorarioIngles = '',
     required this.dataPrimeiroVencimento,
     required this.duracaoMeses,
     required this.valorTotal,
@@ -15,6 +17,8 @@ class FinanceiroContrato {
     required this.observacao,
     required this.isLocked,
     this.jurosDiario = 0,
+    this.refValorMensalPromo = 0,
+    this.refValorMensalIntegral = 0,
   });
 
   final DateTime dataMatricula;
@@ -27,6 +31,12 @@ class FinanceiroContrato {
 
   final bool turmaTecnologia;
   final bool turmaIngles;
+
+  /// Turma e horário (ex.: «3ª feira 14h–16h») quando [turmaTecnologia].
+  final String turmaHorarioTecnologia;
+
+  /// Turma e horário quando [turmaIngles].
+  final String turmaHorarioIngles;
 
   /// Primeiro vencimento; as demais parcelas seguem mensalmente (§5.2).
   final DateTime dataPrimeiroVencimento;
@@ -46,8 +56,16 @@ class FinanceiroContrato {
   final String observacao;
   final bool isLocked;
 
-  /// R\$ por **dia útil** de atraso (Fase 4 — multa/juros sobre a mensalidade).
+  /// Multa diária em R\$: com **dois degraus** (promo + integral), conta **dias corridos**
+  /// após perder o promocional; caso contrário, dias **úteis** (legado).
   final double jurosDiario;
+
+  /// Referência opcional: valor mensal promocional (ex. 100). Usado só para calcular o fator
+  /// integral/promo nas parcelas geradas, junto com [refValorMensalIntegral].
+  final double refValorMensalPromo;
+
+  /// Referência opcional: mensalidade cheia após perder promo (ex. 200).
+  final double refValorMensalIntegral;
 
   static const pacoteOutros = 'Outros';
   static const statusMensalista = 'mensalista';
@@ -77,9 +95,15 @@ class FinanceiroContrato {
   bool get pacoteOutrosValido =>
       pacoteLabel != pacoteOutros || pacoteOutrosDetalhe.trim().isNotEmpty;
 
+  bool get turmasHorariosValidos =>
+      (!turmaTecnologia || turmaHorarioTecnologia.trim().isNotEmpty) &&
+      (!turmaIngles || turmaHorarioIngles.trim().isNotEmpty);
+
   /// Geração automática: quantidade = [duracaoMeses] (documento de passos).
   bool get podeSalvarEGerarParcelas {
-    if (!podeSalvarContratoBasico || !pacoteOutrosValido) return false;
+    if (!podeSalvarContratoBasico || !pacoteOutrosValido || !turmasHorariosValidos) {
+      return false;
+    }
     if (saldoFinanciado > 0) {
       return duracaoMeses >= 1;
     }

@@ -2,6 +2,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
+import '../../core/format/app_formats.dart';
 import '../../domain/domain.dart';
 
 /// Exportação PDF (PASSOS §5.4).
@@ -63,7 +64,7 @@ class RelatoriosPdf {
         margin: const pw.EdgeInsets.all(40),
         build: (ctx) => [
           pw.Text(
-            'SIS Icpro - Aniversariantes ($mes/$ano)',
+            'SIS Icpro - Aniversariantes (${kAppMesAnoCurto.format(DateTime(ano, mes, 1))})',
             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
           ),
           pw.SizedBox(height: 16),
@@ -80,7 +81,7 @@ class RelatoriosPdf {
                   .map(
                     (e) => [
                       e.nomeAluno,
-                      _fmtData(e.dataNascimento),
+                      kAppDateFormat.format(e.dataNascimento),
                       e.turmasLabel,
                     ],
                   )
@@ -104,7 +105,7 @@ class RelatoriosPdf {
         margin: const pw.EdgeInsets.all(40),
         build: (ctx) => [
           pw.Text(
-            'SIS Icpro - Pagantes no mes ($mes/$ano)',
+            'SIS Icpro - Pagantes no mes (${kAppMesAnoCurto.format(DateTime(ano, mes, 1))})',
             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
           ),
           pw.SizedBox(height: 16),
@@ -147,7 +148,7 @@ class RelatoriosPdf {
         margin: const pw.EdgeInsets.all(40),
         build: (ctx) => [
           pw.Text(
-            'SIS Icpro - Alunos em dia ($mes/$ano)',
+            'SIS Icpro - Alunos em dia (${kAppMesAnoCurto.format(DateTime(ano, mes, 1))})',
             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
           ),
           pw.Text(
@@ -182,6 +183,4 @@ class RelatoriosPdf {
     await Printing.layoutPdf(onLayout: (_) async => doc.save());
   }
 
-  static String _fmtData(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 }

@@ -239,6 +239,8 @@ class AlunoRepository {
       'pacote_outros': c.pacoteOutrosDetalhe,
       'turma_tecnologia': c.turmaTecnologia,
       'turma_ingles': c.turmaIngles,
+      'turma_horario_tecnologia': c.turmaHorarioTecnologia,
+      'turma_horario_ingles': c.turmaHorarioIngles,
       'data_primeiro_vencimento':
           Timestamp.fromDate(c.dataPrimeiroVencimento),
       'duracao_meses': c.duracaoMeses,
@@ -249,6 +251,8 @@ class AlunoRepository {
       'observacao': c.observacao,
       'is_locked': c.isLocked,
       'juros_diario': c.jurosDiario,
+      'ref_valor_mensal_promo': c.refValorMensalPromo,
+      'ref_valor_mensal_integral': c.refValorMensalIntegral,
     };
   }
 
@@ -270,6 +274,8 @@ class AlunoRepository {
       'pacote_outros': '',
       'turma_tecnologia': false,
       'turma_ingles': false,
+      'turma_horario_tecnologia': '',
+      'turma_horario_ingles': '',
       'data_primeiro_vencimento': old['data_primeira_parcela'],
       'duracao_meses': old['num_parcelas'] ?? 1,
       'valor_total': old['valor_total'],
@@ -296,6 +302,8 @@ class AlunoRepository {
       pacoteOutrosDetalhe: '${f['pacote_outros'] ?? ''}',
       turmaTecnologia: f['turma_tecnologia'] == true,
       turmaIngles: f['turma_ingles'] == true,
+      turmaHorarioTecnologia: '${f['turma_horario_tecnologia'] ?? ''}',
+      turmaHorarioIngles: '${f['turma_horario_ingles'] ?? ''}',
       dataPrimeiroVencimento:
           tsToDate(f['data_primeiro_vencimento']) ?? padraoDia,
       duracaoMeses: (f['duracao_meses'] as num?)?.toInt() ??
@@ -308,6 +316,10 @@ class AlunoRepository {
       observacao: '${f['observacao'] ?? f['observacoes'] ?? ''}',
       isLocked: f['is_locked'] == true,
       jurosDiario: (f['juros_diario'] as num?)?.toDouble() ?? 0,
+      refValorMensalPromo:
+          (f['ref_valor_mensal_promo'] as num?)?.toDouble() ?? 0,
+      refValorMensalIntegral:
+          (f['ref_valor_mensal_integral'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -324,8 +336,10 @@ class AlunoRepository {
       'forma_pagamento': p.formaPagamento,
       'cartao_parcelas': p.cartaoParcelas,
       'cartao_taxa_pct': p.cartaoTaxaPct,
+      'cartao_taxa_fixa': p.cartaoTaxaFixaReais,
       'atendente': p.atendente,
       'perda_promocional': p.perdaPromocional,
+      'valor_integral': p.valorIntegral,
     };
   }
 
@@ -349,8 +363,10 @@ class AlunoRepository {
       formaPagamento: '${m['forma_pagamento'] ?? ''}',
       cartaoParcelas: (m['cartao_parcelas'] as num?)?.toInt(),
       cartaoTaxaPct: (m['cartao_taxa_pct'] as num?)?.toDouble() ?? 0,
+      cartaoTaxaFixaReais: (m['cartao_taxa_fixa'] as num?)?.toDouble() ?? 0,
       atendente: '${m['atendente'] ?? ''}',
       perdaPromocional: (m['perda_promocional'] as num?)?.toDouble() ?? 0,
+      valorIntegral: (m['valor_integral'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -358,9 +374,16 @@ class AlunoRepository {
   Future<void> salvarParcela({
     required String alunoId,
     required ParcelaGerada parcela,
+    double jurosDiarioContrato = 0,
+    Set<DateTime> feriadosExtras = const {},
   }) async {
+    final extras = feriadosExtras.isEmpty ? null : feriadosExtras;
     final comStatus = parcela.copyWith(
-      status: inferirStatusPersistido(parcela),
+      status: inferirStatusPersistido(
+        parcela,
+        jurosDiarioContrato: jurosDiarioContrato,
+        feriadosExtras: extras,
+      ),
     );
     await _col
         .doc(alunoId)
@@ -371,36 +394,47 @@ class AlunoRepository {
 
   // --- Relatórios (PASSOS §5.4)
 
-  Future<List<RelatorioDebitoItem>> listarAlunosEmDebito() async {
+  Future<List<RelatorioDebitoItem>> listarAlunosEmDebito({
+    Set<DateTime> feriadosExtras = const {},
+  }) async {
     final snap = await _col.get();
     final agora = DateTime.now();
     final hoje = DateTime(agora.year, agora.month, agora.day);
+    final extras = feriadosExtras.isEmpty ? null : feriadosExtras;
     final out = <RelatorioDebitoItem>[];
     for (final d in snap.docs) {
       final dados = _mapDadosPessoais(d.data());
       if (dados == null) continue;
       final parcelas = await obterParcelasGeradas(d.id);
       final atrasadas = <ParcelaGerada>[];
+      final fin = await obterFinanceiro(d.id);
+      final juros = fin?.jurosDiario ?? 0;
       for (final p in parcelas) {
-        if (resolverParcelaStatusVisual(p, agora) ==
+        if (resolverParcelaStatusVisual(
+              p,
+              agora,
+              jurosDiarioContrato: juros,
+              feriadosExtras: extras,
+            ) ==
             ParcelaStatusVisual.atrasado) {
           atrasadas.add(p);
         }
       }
       if (atrasadas.isEmpty) continue;
-      final fin = await obterFinanceiro(d.id);
-      final juros = fin?.jurosDiario ?? 0;
       var maxDias = 0;
       for (final p in atrasadas) {
         final feriados = feriadosParaCalculo(
           a: p.vencimento,
           b: hoje,
+          feriadosExtras: extras,
         );
-        final dias = diasUteisAtraso(
-          vencimento: p.vencimento,
-          fim: hoje,
-          feriados: feriados,
-        );
+        final dias = parcelaUsaDoisDegrausPromocionais(p)
+            ? diasAtrasoCalendarioVenctoOriginal(p.vencimento, hoje)
+            : diasUteisAtraso(
+                vencimento: p.vencimento,
+                fim: hoje,
+                feriados: feriados,
+              );
         if (dias > maxDias) maxDias = dias;
       }
       final total = atrasadas.fold<double>(0, (s, p) {
@@ -410,6 +444,7 @@ class AlunoRepository {
               valorPago: p.valorPago,
               referencia: hoje,
               jurosDiarioContrato: juros,
+              feriadosExtras: extras,
             );
       });
       out.add(
@@ -454,8 +489,14 @@ class AlunoRepository {
   String _turmasResumo(FinanceiroContrato? f) {
     if (f == null) return '—';
     final p = <String>[];
-    if (f.turmaTecnologia) p.add('Tecnologia');
-    if (f.turmaIngles) p.add('Inglês');
+    if (f.turmaTecnologia) {
+      final h = f.turmaHorarioTecnologia.trim();
+      p.add(h.isEmpty ? 'Tecnologia' : 'Tecnologia ($h)');
+    }
+    if (f.turmaIngles) {
+      final h = f.turmaHorarioIngles.trim();
+      p.add(h.isEmpty ? 'Inglês' : 'Inglês ($h)');
+    }
     return p.isEmpty ? '—' : p.join(', ');
   }
 
@@ -494,21 +535,37 @@ class AlunoRepository {
 
   Future<List<RelatorioEmDiaMesItem>> listarAlunosEmDiaNoMes(
     int mes,
-    int ano,
-  ) async {
+    int ano, {
+    Set<DateTime> feriadosExtras = const {},
+  }) async {
     final snap = await _col.get();
     final agora = DateTime.now();
+    final extras = feriadosExtras.isEmpty ? null : feriadosExtras;
     final out = <RelatorioEmDiaMesItem>[];
     for (final d in snap.docs) {
       final dados = _mapDadosPessoais(d.data());
       if (dados == null) continue;
       final parcelas = await obterParcelasGeradas(d.id);
-      if (possuiParcelaAtrasadaHoje(parcelas, agora)) continue;
+      final finEmDia = await obterFinanceiro(d.id);
+      final jurosEmDia = finEmDia?.jurosDiario ?? 0;
+      if (possuiParcelaAtrasadaHoje(
+            parcelas,
+            agora,
+            jurosDiarioContrato: jurosEmDia,
+            feriadosExtras: extras,
+          )) {
+        continue;
+      }
       var q = 0;
       var soma = 0.0;
       for (final p in parcelas) {
         if (!parcelaComPagamentoNoMes(p, mes, ano)) continue;
-        if (!pagamentoParcelaSemAtraso(p)) continue;
+        if (!pagamentoParcelaSemAtraso(
+              p,
+              feriadosExtras: extras,
+            )) {
+          continue;
+        }
         q++;
         soma += p.valorPago;
       }

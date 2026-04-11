@@ -1,3 +1,5 @@
+import 'calculo_parcela_promocional.dart';
+import 'cartao_icpro.dart';
 import 'dias_atraso_uteis.dart';
 import 'entities/parcela_gerada.dart';
 
@@ -28,6 +30,14 @@ double valorDevidoParcelaNaData({
     b: referencia,
     feriadosExtras: feriadosExtras,
   );
+  if (parcelaUsaDoisDegrausPromocionais(parcela)) {
+    return valorDevidoParcelaDoisDegraus(
+      parcela: parcela,
+      referencia: referencia,
+      jurosDiarioContrato: jurosDiarioContrato,
+      feriados: feriados,
+    );
+  }
   final dias = diasUteisAtraso(
     vencimento: parcela.vencimento,
     fim: referencia,
@@ -55,5 +65,8 @@ double restanteParcelaComJuros({
     jurosDiarioContrato: jurosDiarioContrato,
     feriadosExtras: feriadosExtras,
   );
-  return (devido - valorPago).clamp(0.0, double.infinity);
+  final taxaCartao = formaPagamentoCartaoCredito(parcela.formaPagamento)
+      ? parcela.cartaoTaxaFixaReais
+      : 0.0;
+  return (devido + taxaCartao - valorPago).clamp(0.0, double.infinity);
 }

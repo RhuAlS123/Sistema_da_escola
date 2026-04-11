@@ -2,6 +2,8 @@
 library;
 
 export 'calculo_idade.dart';
+export 'calculo_parcela_promocional.dart';
+export 'cartao_icpro.dart';
 export 'dias_atraso_uteis.dart';
 export 'feriados_brasil.dart';
 export 'geracao_parcelas.dart';

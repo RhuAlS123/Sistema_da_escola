@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/errors/app_error_messages.dart';
+import '../../core/format/app_formats.dart';
 import '../../domain/domain.dart';
 import '../providers/app_providers.dart';
 
@@ -11,7 +12,6 @@ import '../providers/app_providers.dart';
 class ControleParcelasPage extends ConsumerWidget {
   const ControleParcelasPage({super.key});
 
-  static final _dataFmt = DateFormat('dd/MM/yyyy');
   static final _moneyFmt = NumberFormat('#,##0.00', 'pt_BR');
 
   static Color _corStatus(
@@ -96,6 +96,8 @@ class ControleParcelasPage extends ConsumerWidget {
         }
         final agora = DateTime.now();
         final hoje = DateTime(agora.year, agora.month, agora.day);
+        final feriadosApi =
+            ref.watch(feriadosBrasilApiProvider).valueOrNull ?? <DateTime>{};
         final finAsync = ref.watch(financeiroContratoDoAlunoProvider(alunoId));
         final jurosDiario = finAsync.valueOrNull?.jurosDiario ?? 0;
         return Column(
@@ -112,7 +114,10 @@ class ControleParcelasPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Valor devido usa juros por dia útil do contrato (domingos/feriados excluídos do atraso).',
+                    'Com valor integral por parcela (promo + cheio): juros são '
+                    'por dia corrido após perder o promocional; limite do desconto '
+                    'segue vencimento (domingo/feriado → próximo dia útil). '
+                    'Sem integral: juros por dia útil (Brasil API + fixos BR).',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -124,7 +129,13 @@ class ControleParcelasPage extends ConsumerWidget {
                 itemCount: lista.length,
                 itemBuilder: (context, i) {
                   final p = lista[i];
-                  final vis = resolverParcelaStatusVisual(p, agora);
+                  final extras = feriadosApi.isEmpty ? null : feriadosApi;
+                  final vis = resolverParcelaStatusVisual(
+                    p,
+                    agora,
+                    jurosDiarioContrato: jurosDiario,
+                    feriadosExtras: extras,
+                  );
                   return Card(
                     margin: const EdgeInsets.only(bottom: 8),
                     child: _ParcelaEditorTile(
@@ -135,10 +146,11 @@ class ControleParcelasPage extends ConsumerWidget {
                       corConteudo: _corStatusOn(context, vis),
                       rotuloStatus: _rotuloStatus(vis),
                       nomeAtendentePadrao: perfil?.nome ?? '',
-                      dataFmt: _dataFmt,
+                      dataFmt: kAppDateFormat,
                       moneyFmt: _moneyFmt,
                       jurosDiarioContrato: jurosDiario,
                       referenciaCalculo: hoje,
+                      feriadosExtras: feriadosApi,
                     ),
                   );
                 },
@@ -188,6 +200,7 @@ class _ParcelaEditorTile extends ConsumerStatefulWidget {
     required this.moneyFmt,
     required this.jurosDiarioContrato,
     required this.referenciaCalculo,
+    required this.feriadosExtras,
   });
 
   final ParcelaGerada parcela;
@@ -201,6 +214,7 @@ class _ParcelaEditorTile extends ConsumerStatefulWidget {
   final NumberFormat moneyFmt;
   final double jurosDiarioContrato;
   final DateTime referenciaCalculo;
+  final Set<DateTime> feriadosExtras;
 
   @override
   ConsumerState<_ParcelaEditorTile> createState() =>
@@ -210,7 +224,6 @@ class _ParcelaEditorTile extends ConsumerStatefulWidget {
 class _ParcelaEditorTileState extends ConsumerState<_ParcelaEditorTile> {
   late final TextEditingController _valorPago;
   late final TextEditingController _cartaoParcelas;
-  late final TextEditingController _cartaoTaxa;
   late final TextEditingController _atendente;
   late String _forma;
   DateTime? _dataPagamento;
@@ -234,12 +247,7 @@ class _ParcelaEditorTileState extends ConsumerState<_ParcelaEditorTile> {
     _cartaoParcelas = TextEditingController(
       text: widget.parcela.cartaoParcelas != null
           ? '${widget.parcela.cartaoParcelas}'
-          : '',
-    );
-    _cartaoTaxa = TextEditingController(
-      text: widget.parcela.cartaoTaxaPct > 0
-          ? widget.parcela.cartaoTaxaPct.toStringAsFixed(2)
-          : '',
+          : '1',
     );
     _atendente = TextEditingController(
       text: widget.parcela.atendente.isNotEmpty
@@ -267,7 +275,6 @@ class _ParcelaEditorTileState extends ConsumerState<_ParcelaEditorTile> {
   void dispose() {
     _valorPago.dispose();
     _cartaoParcelas.dispose();
-    _cartaoTaxa.dispose();
     _atendente.dispose();
     super.dispose();
   }
@@ -278,6 +285,7 @@ class _ParcelaEditorTileState extends ConsumerState<_ParcelaEditorTile> {
     final hoje = DateTime.now();
     final d = await showDatePicker(
       context: context,
+      locale: kAppLocale,
       initialDate: _dataPagamento ?? hoje,
       firstDate: DateTime(hoje.year - 2),
       lastDate: DateTime(hoje.year + 1),
@@ -287,18 +295,18 @@ class _ParcelaEditorTileState extends ConsumerState<_ParcelaEditorTile> {
 
   Future<void> _salvar() async {
     final vp = _parseMoney(_valorPago.text) ?? 0;
-    final taxa = double.tryParse(
-          _cartaoTaxa.text.trim().replaceAll(',', '.'),
-        ) ??
-        0;
     final cx = int.tryParse(_cartaoParcelas.text.trim());
+    final taxaFixa = _mostrarCartaoCredito
+        ? taxaCartaoCreditoIcproReais(cx)
+        : 0.0;
 
     final atual = widget.parcela.copyWith(
       valorPago: vp,
       dataPagamento: _dataPagamento,
       formaPagamento: _forma,
       cartaoParcelas: _mostrarCartaoCredito ? cx : null,
-      cartaoTaxaPct: _mostrarCartaoCredito ? taxa : 0,
+      cartaoTaxaPct: 0,
+      cartaoTaxaFixaReais: taxaFixa,
       atendente: _atendente.text.trim(),
     );
 
@@ -315,6 +323,8 @@ class _ParcelaEditorTileState extends ConsumerState<_ParcelaEditorTile> {
       await ref.read(alunoRepositoryProvider).salvarParcela(
             alunoId: widget.alunoId,
             parcela: atual,
+            jurosDiarioContrato: widget.jurosDiarioContrato,
+            feriadosExtras: widget.feriadosExtras,
           );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -333,21 +343,36 @@ class _ParcelaEditorTileState extends ConsumerState<_ParcelaEditorTile> {
   Widget build(BuildContext context) {
     final p = widget.parcela;
     final vp = _parseMoney(_valorPago.text) ?? p.valorPago;
+    final extras =
+        widget.feriadosExtras.isEmpty ? null : widget.feriadosExtras;
     final feriados = feriadosParaCalculo(
       a: p.vencimento,
       b: widget.referenciaCalculo,
+      feriadosExtras: extras,
     );
     final diasUteis = diasUteisAtraso(
       vencimento: p.vencimento,
       fim: widget.referenciaCalculo,
       feriados: feriados,
     );
-    final restante = restanteParcelaComJuros(
+    final doisDegraus = parcelaUsaDoisDegrausPromocionais(p);
+    final diasCorridosAtraso = diasAtrasoCalendarioVenctoOriginal(
+      p.vencimento,
+      widget.referenciaCalculo,
+    );
+    final devidoBase = valorDevidoParcelaNaData(
       parcela: p,
-      valorPago: vp,
       referencia: widget.referenciaCalculo,
       jurosDiarioContrato: widget.jurosDiarioContrato,
+      feriadosExtras: extras,
     );
+    final taxaExibir = _mostrarCartaoCredito
+        ? taxaCartaoCreditoIcproReais(int.tryParse(_cartaoParcelas.text.trim()))
+        : (formaPagamentoCartaoCredito(p.formaPagamento)
+            ? p.cartaoTaxaFixaReais
+            : 0.0);
+    final restante =
+        (devidoBase + taxaExibir - vp).clamp(0.0, double.infinity);
 
     return ExpansionTile(
       leading: CircleAvatar(
@@ -361,7 +386,14 @@ class _ParcelaEditorTileState extends ConsumerState<_ParcelaEditorTile> {
           ),
         ),
       ),
-      title: Text('Venc. ${widget.dataFmt.format(p.vencimento)} — R\$ ${widget.moneyFmt.format(p.valor)}'),
+      title: Text(
+        doisDegraus
+            ? 'Venc. ${widget.dataFmt.format(p.vencimento)} — '
+                'promo R\$ ${widget.moneyFmt.format(p.valor)} · '
+                'integral R\$ ${widget.moneyFmt.format(p.valorIntegral)}'
+            : 'Venc. ${widget.dataFmt.format(p.vencimento)} — '
+                'R\$ ${widget.moneyFmt.format(p.valor)}',
+      ),
       subtitle: Chip(
         label: Text(widget.rotuloStatus),
         backgroundColor: widget.corFundo,
@@ -376,14 +408,19 @@ class _ParcelaEditorTileState extends ConsumerState<_ParcelaEditorTile> {
             children: [
               if (widget.statusVisual != ParcelaStatusVisual.pago) ...[
                 Text(
-                  'Dias úteis de atraso (até hoje): $diasUteis — juros/dia útil: '
-                  'R\$ ${widget.moneyFmt.format(widget.jurosDiarioContrato)}',
+                  doisDegraus
+                      ? 'Dias corridos após vencimento original (até hoje): '
+                          '$diasCorridosAtraso — juros/dia: '
+                          'R\$ ${widget.moneyFmt.format(widget.jurosDiarioContrato)} '
+                          '(após perder o promocional).'
+                      : 'Dias úteis de atraso (até hoje): $diasUteis — juros/dia útil: '
+                          'R\$ ${widget.moneyFmt.format(widget.jurosDiarioContrato)}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Restante (mensalidade + juros − perda − pago): R\$ '
-                  '${widget.moneyFmt.format(restante)}',
+                  'Restante (valor devido + taxa cartão ICPRO quando aplicável − pago): '
+                  'R\$ ${widget.moneyFmt.format(restante)}',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ] else
@@ -444,15 +481,13 @@ class _ParcelaEditorTileState extends ConsumerState<_ParcelaEditorTile> {
                     labelText: 'Parcelas no cartão',
                     border: OutlineInputBorder(),
                   ),
+                  onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 8),
-                TextFormField(
-                  controller: _cartaoTaxa,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                    labelText: 'Taxa % (crédito)',
-                    border: OutlineInputBorder(),
-                  ),
+                Text(
+                  'Taxa fixa (ICPRO): R\$ 5,00 × parcelas = '
+                  'R\$ ${widget.moneyFmt.format(taxaCartaoCreditoIcproReais(int.tryParse(_cartaoParcelas.text.trim())))}',
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
               const SizedBox(height: 12),

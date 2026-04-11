@@ -14,7 +14,8 @@
 ///   `data_nascimento_responsavel`, `endereco`, `cidade`, `parentesco`,
 ///   `nome_aluno`, `data_nascimento_aluno` (datas como Timestamp)
 /// - `financeiro_contrato` — mapa do contrato (ver entidade `FinanceiroContrato`): datas,
-///   pacote, turmas, valores, `is_locked`, `juros_diario`, etc.
+///   pacote, `turma_tecnologia` / `turma_ingles`, `turma_horario_tecnologia`,
+///   `turma_horario_ingles`, valores, `is_locked`, `juros_diario`, etc.
 /// - `criadoEm`, `atualizadoEm` — Timestamp (servidor)
 ///
 /// Legado (migração): `financeiro`, `parcelas_geradas` em lista — preferir subcoleção.
@@ -22,6 +23,6 @@
 /// ## `alunos/{alunoId}/parcelas/{numero}`
 /// `numero` como id string do número da parcela. Campos principais:
 /// `numero`, `vencimento`, `valor`, `status`, `data_pagamento`, `valor_pago`,
-/// `forma_pagamento`, `cartao_parcelas`, `cartao_taxa_pct`, `atendente`,
-/// `perda_promocional`.
+/// `forma_pagamento`, `cartao_parcelas`, `cartao_taxa_pct`, `cartao_taxa_fixa`,
+/// `atendente`, `perda_promocional`.
 library;

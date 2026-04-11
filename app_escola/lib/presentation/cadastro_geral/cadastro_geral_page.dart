@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 import '../../core/errors/app_error_messages.dart';
+import '../../core/format/app_formats.dart';
+import '../../core/theme/app_theme.dart';
 import '../../domain/domain.dart';
 import '../providers/app_providers.dart';
 
@@ -208,6 +209,7 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
     final hoje = DateTime.now();
     final d = await showDatePicker(
       context: context,
+      locale: kAppLocale,
       initialDate: responsavel
           ? (_nascResp ?? DateTime(hoje.year - 30))
           : (_nascAluno ?? DateTime(hoje.year - 10)),
@@ -227,7 +229,7 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
   }
 
   String _fmtData(DateTime? d) =>
-      d == null ? 'Selecionar' : DateFormat('dd/MM/yyyy').format(d);
+      d == null ? 'Selecionar' : kAppDateFormat.format(d);
 
   @override
   Widget build(BuildContext context) {
@@ -269,7 +271,7 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
                 ),
               ],
               const SizedBox(height: 24),
-              Text('Responsável', style: Theme.of(context).textTheme.titleMedium),
+              Text('DADOS DO RESPONSÁVEL', style: AppTheme.sectionHeader(context)),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _nomeResp,
@@ -357,7 +359,7 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
                 },
               ),
               const SizedBox(height: 24),
-              Text('Aluno', style: Theme.of(context).textTheme.titleMedium),
+              Text('DADOS DO ALUNO', style: AppTheme.sectionHeader(context)),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _nomeAluno,

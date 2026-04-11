@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/errors/app_error_messages.dart';
+import '../../core/format/app_formats.dart';
 import '../../domain/domain.dart';
 import '../providers/app_providers.dart';
 import 'relatorios_pdf.dart';
@@ -49,7 +50,10 @@ class RelatoriosPage extends ConsumerWidget {
                     value: mesRef.month,
                     items: [
                       for (var m = 1; m <= 12; m++)
-                        DropdownMenuItem(value: m, child: Text('$m')),
+                        DropdownMenuItem(
+                          value: m,
+                          child: Text(nomeMesPt(m)),
+                        ),
                     ],
                     onChanged: (m) {
                       if (m == null) return;
@@ -75,12 +79,32 @@ class RelatoriosPage extends ConsumerWidget {
               const SizedBox(height: 24),
               _SecaoDebito(money: _money),
               const SizedBox(height: 16),
-              _SecaoAniversariantes(mesAtual: agora.month, anoAtual: agora.year),
+              _SecaoAniversariantes(
+                mesAtual: agora.month,
+                anoAtual: agora.year,
+                tituloMesAno: kAppMesAnoLongo.format(
+                  DateTime(agora.year, agora.month, 1),
+                ),
+              ),
               const SizedBox(height: 16),
-              _SecaoPagantes(money: _money, mes: mesRef.month, ano: mesRef.year),
+              _SecaoPagantes(
+                money: _money,
+                mes: mesRef.month,
+                ano: mesRef.year,
+                tituloMesAno: kAppMesAnoLongo.format(
+                  DateTime(mesRef.year, mesRef.month, 1),
+                ),
+              ),
               if (isAdmin) ...[
                 const SizedBox(height: 16),
-                _SecaoEmDia(money: _money, mes: mesRef.month, ano: mesRef.year),
+                _SecaoEmDia(
+                  money: _money,
+                  mes: mesRef.month,
+                  ano: mesRef.year,
+                  tituloMesAno: kAppMesAnoLongo.format(
+                    DateTime(mesRef.year, mesRef.month, 1),
+                  ),
+                ),
               ],
             ],
           ),
@@ -172,10 +196,12 @@ class _SecaoAniversariantes extends ConsumerWidget {
   const _SecaoAniversariantes({
     required this.mesAtual,
     required this.anoAtual,
+    required this.tituloMesAno,
   });
 
   final int mesAtual;
   final int anoAtual;
+  final String tituloMesAno;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -191,7 +217,7 @@ class _SecaoAniversariantes extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Aniversariantes do mês atual ($mesAtual/$anoAtual)',
+                    'Aniversariantes do mês atual ($tituloMesAno)',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -230,10 +256,7 @@ class _SecaoAniversariantes extends ConsumerWidget {
                         DataRow(
                           cells: [
                             DataCell(Text(e.nomeAluno)),
-                            DataCell(Text(
-                              '${e.dataNascimento.day.toString().padLeft(2, '0')}/'
-                              '${e.dataNascimento.month.toString().padLeft(2, '0')}',
-                            )),
+                            DataCell(Text(kAppDateFormat.format(e.dataNascimento))),
                             DataCell(Text(e.turmasLabel)),
                           ],
                         ),
@@ -256,11 +279,13 @@ class _SecaoPagantes extends ConsumerWidget {
     required this.money,
     required this.mes,
     required this.ano,
+    required this.tituloMesAno,
   });
 
   final NumberFormat money;
   final int mes;
   final int ano;
+  final String tituloMesAno;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -276,7 +301,7 @@ class _SecaoPagantes extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Alunos pagantes (geral) — $mes/$ano',
+                    'Alunos pagantes (geral) — $tituloMesAno',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -337,11 +362,13 @@ class _SecaoEmDia extends ConsumerWidget {
     required this.money,
     required this.mes,
     required this.ano,
+    required this.tituloMesAno,
   });
 
   final NumberFormat money;
   final int mes;
   final int ano;
+  final String tituloMesAno;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -358,7 +385,7 @@ class _SecaoEmDia extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Alunos em dia (admin) — $mes/$ano',
+                    'Alunos em dia (admin) — $tituloMesAno',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),

@@ -33,10 +33,17 @@ bool parcelaComPagamentoNoMes(ParcelaGerada p, int mes, int ano) {
 
 bool possuiParcelaAtrasadaHoje(
   List<ParcelaGerada> parcelas,
-  DateTime agora,
-) {
+  DateTime agora, {
+  required double jurosDiarioContrato,
+  Set<DateTime>? feriadosExtras,
+}) {
   for (final p in parcelas) {
-    if (resolverParcelaStatusVisual(p, agora) ==
+    if (resolverParcelaStatusVisual(
+          p,
+          agora,
+          jurosDiarioContrato: jurosDiarioContrato,
+          feriadosExtras: feriadosExtras,
+        ) ==
         ParcelaStatusVisual.atrasado) {
       return true;
     }

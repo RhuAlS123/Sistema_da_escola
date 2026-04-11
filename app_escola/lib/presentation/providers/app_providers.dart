@@ -53,8 +53,18 @@ final relatorioMesReferenciaProvider = StateProvider<DateTime>((ref) {
   return DateTime(n.year, n.month, 1);
 });
 
-final relatorioDebitoProvider = FutureProvider.autoDispose((ref) {
-  return ref.watch(alunoRepositoryProvider).listarAlunosEmDebito();
+/// Feriados nacionais (Brasil API), como no ICPROV6 — somados aos fixos no domínio.
+final feriadosBrasilApiProvider = FutureProvider<Set<DateTime>>((ref) async {
+  final repo = BrasilApiFeriadosRepository();
+  final y = DateTime.now().year;
+  return repo.feriadosParaAnos(y - 1, y + 1);
+});
+
+final relatorioDebitoProvider = FutureProvider.autoDispose((ref) async {
+  final api = ref.watch(feriadosBrasilApiProvider).valueOrNull ?? {};
+  return ref.watch(alunoRepositoryProvider).listarAlunosEmDebito(
+        feriadosExtras: api,
+      );
 });
 
 /// Aniversariantes do **mês civil atual** (documento de passos).
@@ -70,11 +80,14 @@ final relatorioPagantesMesProvider = FutureProvider.autoDispose((ref) {
       .listarAlunosPagantesNoMes(d.month, d.year);
 });
 
-final relatorioEmDiaMesProvider = FutureProvider.autoDispose((ref) {
+final relatorioEmDiaMesProvider = FutureProvider.autoDispose((ref) async {
   final d = ref.watch(relatorioMesReferenciaProvider);
-  return ref
-      .watch(alunoRepositoryProvider)
-      .listarAlunosEmDiaNoMes(d.month, d.year);
+  final api = ref.watch(feriadosBrasilApiProvider).valueOrNull ?? {};
+  return ref.watch(alunoRepositoryProvider).listarAlunosEmDiaNoMes(
+        d.month,
+        d.year,
+        feriadosExtras: api,
+      );
 });
 
 /// Estado de sessão Firebase Auth.

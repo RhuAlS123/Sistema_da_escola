@@ -2,6 +2,7 @@
 library;
 
 export 'firestore_model_doc.dart';
+export 'remote/brasil_api_feriados.dart';
 export 'repositories/aluno_repository.dart';
 export 'repositories/auth_repository.dart';
 export 'repositories/user_profile_repository.dart';
