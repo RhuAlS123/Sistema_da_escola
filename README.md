@@ -1,3 +1,12 @@
-# SIS Icpro
+# Sistema de Cadastro ICPRO
 
-Código Flutter: pasta [`app_escola/`](app_escola/README.md).
+Sistema completo de gestão escolar e financeira com controle de parcelas e relatórios em tempo real.
+
+## Como rodar o projeto localmente
+
+**Pré-requisitos:** Node.js
+
+1. Instale as dependências:
+   `npm install`
+2. Inicie o servidor de desenvolvimento:
+   `npm run dev`

@@ -1,0 +1,5 @@
+{
+  "name": "Sistema de Cadastro ICPRO",
+  "description": "Sistema completo de cadastro de alunos e gestão financeira com controle de parcelas e relatórios.",
+  "requestFramePermissions": []
+}

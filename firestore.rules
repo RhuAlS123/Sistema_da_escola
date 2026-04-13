@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Desenvolvimento / app sem Firebase Auth: permite leitura e escrita.
+    // Antes de dados reais em produção, substitui por regras restritivas.
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

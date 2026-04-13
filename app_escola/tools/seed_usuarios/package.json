@@ -1,9 +1,0 @@
-{
-  "name": "seed-usuarios-escola",
-  "private": true,
-  "type": "module",
-  "description": "Cria utilizadores Auth + documentos usuarios/{uid} (Firebase Admin). Ver ../../SETUP_USUARIOS.md",
-  "dependencies": {
-    "firebase-admin": "^12.6.0"
-  }
-}

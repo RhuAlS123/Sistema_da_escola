@@ -1,75 +1,9 @@
-# OS / IDE
+.firebase/
+node_modules/
+build/
+dist/
+coverage/
 .DS_Store
-Thumbs.db
-.idea/
-*.iml
-.vscode/*
-!.vscode/extensions.json
-
-# Flutter / Dart (app_escola e subpastas)
-**/.dart_tool/
-**/.flutter-plugins-dependencies
-**/build/
-**/doc/api/
-**/coverage/
-*.class
 *.log
-*.pyc
-*.swp
-.pub-cache/
-.pub/
-
-# Android
-**/android/.gradle/
-**/android/captures/
-**/android/local.properties
-**/android/**/GeneratedPluginRegistrant.java
-**/android/key.properties
-*.jks
-*.keystore
-
-# iOS / macOS
-**/ios/Pods/
-**/ios/.symlinks/
-**/ios/Flutter/Flutter.framework
-**/ios/Flutter/Flutter.podspec
-**/ios/Flutter/Generated.xcconfig
-**/ios/Flutter/ephemeral/
-**/macos/Flutter/ephemeral/
-
-# Web
-**/web/.dart_tool/
-
-# Firebase Admin (scripts locais; nunca versionar chaves)
-**/firebase-adminsdk-*.json
-**/serviceAccount*.json
-
-# Firebase CLI cache local
-**/.firebase/
-
-# Node (ex.: app_escola/tools/seed_usuarios)
-**/node_modules/
-app_escola/tools/seed_usuarios/package-lock.json
-
-# Documentação de entrega / checklist local (não versionar)
-ENTREGA_CLIENTE.pdf
-ENTREGA_CLIENTE.doc
-ENTREGA_CLIENTE.md
-PASSOS-IMPLEMENTACAO.md
-
-# Documentação longa opcional em app_escola (conteúdo resumido no README)
-app_escola/SETUP_FIREBASE.md
-app_escola/SETUP_USUARIOS.md
-
-# Variáveis de ambiente locais (se passar a usar)
-.env
-.env.*
+.env*
 !.env.example
-
-# Outros
-*.symbols
-*.map.json
-migrate_working_dir/
-
-# Pastas locais de histórico / IDE (não versionar)
-historico-cursor/
