@@ -19,12 +19,13 @@ class CadastroFinanceiroPage extends ConsumerStatefulWidget {
 }
 
 class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage> {
-  final _valorTotal = TextEditingController();
-  final _valorEntrada = TextEditingController();
-  final _taxas = TextEditingController();
+  final _valorMensalidade = TextEditingController();
+  final _taxaMatricula = TextEditingController();
+  final _valorPerdaPromocional = TextEditingController();
   final _jurosDiario = TextEditingController();
-  final _refValorMensalPromo = TextEditingController();
-  final _refValorMensalIntegral = TextEditingController();
+  final _taxaSegundaViaContrato = TextEditingController();
+  final _taxaReteste = TextEditingController();
+  final _multaRescisoria = TextEditingController();
   final _duracaoMeses = TextEditingController();
   final _pacoteOutros = TextEditingController();
   final _observacao = TextEditingController();
@@ -59,12 +60,13 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
 
   @override
   void dispose() {
-    _valorTotal.dispose();
-    _valorEntrada.dispose();
-    _taxas.dispose();
+    _valorMensalidade.dispose();
+    _taxaMatricula.dispose();
+    _valorPerdaPromocional.dispose();
     _jurosDiario.dispose();
-    _refValorMensalPromo.dispose();
-    _refValorMensalIntegral.dispose();
+    _taxaSegundaViaContrato.dispose();
+    _taxaReteste.dispose();
+    _multaRescisoria.dispose();
     _duracaoMeses.dispose();
     _pacoteOutros.dispose();
     _observacao.dispose();
@@ -128,13 +130,15 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
           _turmaHorarioTec.text = fin.turmaHorarioTecnologia;
           _turmaHorarioIng.text = fin.turmaHorarioIngles;
           _duracaoMeses.text = '${fin.duracaoMeses}';
-          _valorTotal.text = _doubleParaCampo(fin.valorTotal);
-          _valorEntrada.text = _doubleParaCampo(fin.valorEntrada);
-          _taxas.text = _doubleParaCampo(fin.taxas);
+          _valorMensalidade.text = _doubleParaCampo(fin.valorMensalidade);
+          _taxaMatricula.text = _doubleParaCampo(fin.taxaMatricula);
+          _valorPerdaPromocional.text =
+              _doubleParaCampo(fin.valorPerdaPromocional);
           _jurosDiario.text = _doubleParaCampo(fin.jurosDiario);
-          _refValorMensalPromo.text = _doubleParaCampo(fin.refValorMensalPromo);
-          _refValorMensalIntegral.text =
-              _doubleParaCampo(fin.refValorMensalIntegral);
+          _taxaSegundaViaContrato.text =
+              _doubleParaCampo(fin.taxaSegundaViaContrato);
+          _taxaReteste.text = _doubleParaCampo(fin.taxaReteste);
+          _multaRescisoria.text = _doubleParaCampo(fin.multaRescisoria);
           _statusContrato = fin.statusContrato == FinanceiroContrato.statusBolsista
               ? FinanceiroContrato.statusBolsista
               : FinanceiroContrato.statusMensalista;
@@ -155,12 +159,13 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
   }
 
   void _limparForm() {
-    _valorTotal.clear();
-    _valorEntrada.clear();
-    _taxas.text = _doubleParaCampo(0);
+    _valorMensalidade.clear();
+    _taxaMatricula.clear();
+    _valorPerdaPromocional.text = _doubleParaCampo(0);
     _jurosDiario.text = _doubleParaCampo(0);
-    _refValorMensalPromo.text = _doubleParaCampo(0);
-    _refValorMensalIntegral.text = _doubleParaCampo(0);
+    _taxaSegundaViaContrato.text = _doubleParaCampo(0);
+    _taxaReteste.text = _doubleParaCampo(0);
+    _multaRescisoria.text = _doubleParaCampo(0);
     _duracaoMeses.text = '12';
     _pacoteOutros.clear();
     _observacao.clear();
@@ -175,12 +180,13 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
   }
 
   FinanceiroContrato _montarContrato({required bool isLocked}) {
-    final vt = _parseMoney(_valorTotal.text) ?? 0;
-    final ve = _parseMoney(_valorEntrada.text) ?? 0;
-    final tx = _parseMoney(_taxas.text) ?? 0;
+    final valorMensalidade = _parseMoney(_valorMensalidade.text) ?? 0;
+    final taxaMatricula = _parseMoney(_taxaMatricula.text) ?? 0;
+    final valorPerdaPromocional = _parseMoney(_valorPerdaPromocional.text) ?? 0;
     final juros = _parseMoney(_jurosDiario.text) ?? 0;
-    final refPromo = _parseMoney(_refValorMensalPromo.text) ?? 0;
-    final refIntegral = _parseMoney(_refValorMensalIntegral.text) ?? 0;
+    final taxaSegundaViaContrato = _parseMoney(_taxaSegundaViaContrato.text) ?? 0;
+    final taxaReteste = _parseMoney(_taxaReteste.text) ?? 0;
+    final multaRescisoria = _parseMoney(_multaRescisoria.text) ?? 0;
     final dm = _parseIntSafe(_duracaoMeses.text) ?? 1;
     final dmMat = _dataMatricula ?? DateTime.now();
     final dmVen = _dataPrimeiroVencimento ?? DateTime.now();
@@ -198,12 +204,13 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
       turmaHorarioIngles: _turmaHorarioIng.text.trim(),
       dataPrimeiroVencimento: dmVen,
       duracaoMeses: dm,
-      valorTotal: vt,
-      valorEntrada: ve,
-      taxas: tx,
+      valorMensalidade: valorMensalidade,
+      taxaMatricula: taxaMatricula,
+      valorPerdaPromocional: valorPerdaPromocional,
       jurosDiario: juros,
-      refValorMensalPromo: refPromo,
-      refValorMensalIntegral: refIntegral,
+      taxaSegundaViaContrato: taxaSegundaViaContrato,
+      taxaReteste: taxaReteste,
+      multaRescisoria: multaRescisoria,
       statusContrato: _statusContrato,
       observacao: _observacao.text.trim(),
       isLocked: isLocked,
@@ -227,7 +234,8 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
         msg = 'Descreva o pacote quando selecionar «Outros».';
       } else if (!c.podeSalvarContratoBasico) {
         msg = 'Preencha matrícula, vencimento, duração (1–120), valores e status. '
-            'Entrada + taxas não podem exceder o total.';
+            'A taxa de matrícula deve ser menor ou igual à mensalidade e a perda '
+            'promocional não pode exceder a mensalidade.';
       } else {
         msg = 'Saldo a parcelar ou duração inválidos para gerar parcelas.';
       }
@@ -407,7 +415,10 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
       helpText: matricula
           ? 'Data da matrícula'
           : 'Primeiro vencimento (dia, mês e ano)',
-      fieldHintText: matricula ? null : 'DD/MM/AAAA',
+      fieldHintText: 'DD/MM/AAAA',
+      fieldLabelText: 'Digite a data',
+      errorFormatText: 'Formato inválido. Use DD/MM/AAAA.',
+      errorInvalidText: 'Data inválida.',
     );
     if (d != null) {
       setState(() {
@@ -457,14 +468,18 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
       _dataMatricula = DateTime(2026, 1, 10);
       _dataPrimeiroVencimento = DateTime(2026, 1, 17);
       _duracaoMeses.text = '12';
-      _valorTotal.text = _doubleParaCampo(1200);
-      _valorEntrada.text = _doubleParaCampo(0);
-      _taxas.text = _doubleParaCampo(0);
+      _valorMensalidade.text = _doubleParaCampo(200);
+      _taxaMatricula.text = _doubleParaCampo(0);
+      _valorPerdaPromocional.text = _doubleParaCampo(100);
       _jurosDiario.text = _doubleParaCampo(0.10);
-      _refValorMensalPromo.text = _doubleParaCampo(100);
-      _refValorMensalIntegral.text = _doubleParaCampo(200);
+      _taxaSegundaViaContrato.text = _doubleParaCampo(35);
+      _taxaReteste.text = _doubleParaCampo(60);
+      _multaRescisoria.text = _doubleParaCampo(500);
       _observacao.text =
-          'Demonstração ao cliente: 12 parcelas de R\$ 100 (promo) com integral '
+          'Demonstração ao cliente: mensalidade cheia R\$ 200 com desconto de '
+          'pontualidade de R\$ 100 (paga R\$ 100 em dia). Após vencimento, cobra '
+          'integral + juros diários. '
+          'Parcelamento em 12 meses; parcela promocional R\$ 100 e integral '
           'R\$ 200; juros R\$ 0,10 por dia corrido após perder o promocional; '
           '1º vencimento em sábado 17/01/2026.';
       _statusContrato = FinanceiroContrato.statusMensalista;
@@ -747,7 +762,7 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
               ),
               const SizedBox(height: 12),
               TextFormField(
-                controller: _valorTotal,
+                controller: _valorMensalidade,
                 readOnly: _locked,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
@@ -755,13 +770,13 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
                 ],
                 onChanged: (_) => setState(() {}),
                 decoration: const InputDecoration(
-                  labelText: 'Valor total (R\$)',
+                  labelText: 'Valor Mensalidade (R\$)',
                   border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
               TextFormField(
-                controller: _valorEntrada,
+                controller: _taxaMatricula,
                 readOnly: _locked,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
@@ -769,13 +784,13 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
                 ],
                 onChanged: (_) => setState(() {}),
                 decoration: const InputDecoration(
-                  labelText: 'Valor da entrada (R\$)',
+                  labelText: 'Taxa de Matrícula',
                   border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
               TextFormField(
-                controller: _taxas,
+                controller: _valorPerdaPromocional,
                 readOnly: _locked,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
@@ -783,9 +798,10 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
                 ],
                 onChanged: (_) => setState(() {}),
                 decoration: const InputDecoration(
-                  labelText: 'Taxas (R\$)',
+                  labelText: 'Valor Perda Promocional',
                   border: OutlineInputBorder(),
-                  helperText: 'Descontadas do saldo a parcelar (além da entrada).',
+                  helperText:
+                      'Desconto perdido em atraso. Ex.: mensalidade 200 e pago em dia 100 => perda 100.',
                 ),
               ),
               const SizedBox(height: 12),
@@ -801,14 +817,12 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
                   labelText: 'Juros diário (R\$)',
                   border: OutlineInputBorder(),
                   helperText:
-                      'Com referências promo/integral abaixo: cobrado por dia corrido '
-                      'após perder o promocional. Sem integral: dias úteis; domingos e '
-                      'feriados não entram no atraso.',
+                      'Atrasou após vencimento: cobrança usa mensalidade cheia + juros diários.',
                 ),
               ),
               const SizedBox(height: 12),
               TextFormField(
-                controller: _refValorMensalPromo,
+                controller: _taxaSegundaViaContrato,
                 readOnly: _locked,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
@@ -816,15 +830,13 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
                 ],
                 onChanged: (_) => setState(() {}),
                 decoration: const InputDecoration(
-                  labelText: 'Referência: mensal promocional (R\$, opcional)',
+                  labelText: '2ª Via de Contrato',
                   border: OutlineInputBorder(),
-                  helperText:
-                      'Junto com «mensal cheia», define o fator integral÷promo em cada parcela gerada.',
                 ),
               ),
               const SizedBox(height: 12),
               TextFormField(
-                controller: _refValorMensalIntegral,
+                controller: _taxaReteste,
                 readOnly: _locked,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
@@ -832,28 +844,51 @@ class _CadastroFinanceiroPageState extends ConsumerState<CadastroFinanceiroPage>
                 ],
                 onChanged: (_) => setState(() {}),
                 decoration: const InputDecoration(
-                  labelText: 'Referência: mensal cheia / perda promocional (R\$, opcional)',
+                  labelText: 'Reteste',
                   border: OutlineInputBorder(),
-                  helperText:
-                      'Deve ser maior que o promocional. Ex.: promo 100 e cheia 200 → fator 2×.',
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _multaRescisoria,
+                readOnly: _locked,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
+                ],
+                onChanged: (_) => setState(() {}),
+                decoration: const InputDecoration(
+                  labelText: 'Multa Rescisória',
+                  border: OutlineInputBorder(),
                 ),
               ),
               Builder(
                 builder: (context) {
-                  final vt = _parseMoney(_valorTotal.text) ?? 0;
-                  final ve = _parseMoney(_valorEntrada.text) ?? 0;
-                  final tx = _parseMoney(_taxas.text) ?? 0;
-                  final saldo = vt - ve - tx;
+                  final mensalidade = _parseMoney(_valorMensalidade.text) ?? 0;
+                  final matricula = _parseMoney(_taxaMatricula.text) ?? 0;
+                  final perdaPromo = _parseMoney(_valorPerdaPromocional.text) ?? 0;
+                  final saldo = mensalidade - matricula;
+                  final comDesconto = mensalidade - perdaPromo;
                   return Padding(
                     padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      saldo > 0
-                          ? 'Saldo a parcelar: ${_moneyFmt.format(saldo)} '
-                              '(${_duracaoMeses.text.trim().isEmpty ? "—" : _duracaoMeses.text} parcelas)'
-                          : saldo == 0 && vt >= 0
-                              ? 'Sem saldo a parcelar (à vista ou taxas/entrada cobrem o total).'
-                              : 'Ajuste total, entrada e taxas.',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          saldo > 0
+                              ? 'Saldo a parcelar: ${_moneyFmt.format(saldo)} '
+                                  '(${_duracaoMeses.text.trim().isEmpty ? "—" : _duracaoMeses.text} parcelas)'
+                              : saldo == 0 && mensalidade >= 0
+                                  ? 'Sem saldo a parcelar (taxa de matrícula cobre a mensalidade).'
+                                  : 'Ajuste mensalidade e taxa de matrícula.',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Valor com Desconto de Pontualidade: ${_moneyFmt.format(comDesconto.clamp(0.0, double.infinity))}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
                     ),
                   );
                 },
