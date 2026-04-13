@@ -66,8 +66,7 @@ double valorDevidoParcelaDoisDegraus({
     return math.max(0.0, vp - pagoTotal);
   }
 
-  final dias =
-      diasAtrasoCalendarioVenctoOriginal(parcela.vencimento, ref);
+  final dias = diasAtrasoCalendarioVenctoOriginal(limite, ref);
   final bruto = vi + dias * jurosDiarioContrato;
   return math.max(0.0, bruto - pagoTotal);
 }

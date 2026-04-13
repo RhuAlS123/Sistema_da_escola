@@ -215,6 +215,10 @@ class _CadastroGeralPageState extends ConsumerState<CadastroGeralPage> {
           : (_nascAluno ?? DateTime(hoje.year - 10)),
       firstDate: DateTime(1900),
       lastDate: hoje,
+      fieldHintText: 'DD/MM/AAAA',
+      fieldLabelText: 'Digite a data',
+      errorFormatText: 'Formato inválido. Use DD/MM/AAAA.',
+      errorInvalidText: 'Data inválida.',
     );
     if (d != null) {
       setState(() {

@@ -10,15 +10,16 @@ class FinanceiroContrato {
     this.turmaHorarioIngles = '',
     required this.dataPrimeiroVencimento,
     required this.duracaoMeses,
-    required this.valorTotal,
-    required this.valorEntrada,
-    required this.taxas,
+    required this.valorMensalidade,
+    required this.taxaMatricula,
+    required this.valorPerdaPromocional,
     required this.statusContrato,
     required this.observacao,
     required this.isLocked,
     this.jurosDiario = 0,
-    this.refValorMensalPromo = 0,
-    this.refValorMensalIntegral = 0,
+    this.taxaSegundaViaContrato = 0,
+    this.taxaReteste = 0,
+    this.multaRescisoria = 0,
   });
 
   final DateTime dataMatricula;
@@ -44,11 +45,14 @@ class FinanceiroContrato {
   /// Quantidade de parcelas = duração em meses (PASSOS).
   final int duracaoMeses;
 
-  final double valorTotal;
-  final double valorEntrada;
+  /// Valor cheio da mensalidade.
+  final double valorMensalidade;
 
-  /// Taxas adicionais descontadas do valor a parcelar (além da entrada).
-  final double taxas;
+  /// Valor pago no ato da matrícula.
+  final double taxaMatricula;
+
+  /// Desconto perdido quando o pagamento é após vencimento.
+  final double valorPerdaPromocional;
 
   /// `mensalista` | `bolsista`
   final String statusContrato;
@@ -60,12 +64,14 @@ class FinanceiroContrato {
   /// após perder o promocional; caso contrário, dias **úteis** (legado).
   final double jurosDiario;
 
-  /// Referência opcional: valor mensal promocional (ex. 100). Usado só para calcular o fator
-  /// integral/promo nas parcelas geradas, junto com [refValorMensalIntegral].
-  final double refValorMensalPromo;
+  /// Taxa fixa manual para emissão de 2ª via de contrato.
+  final double taxaSegundaViaContrato;
 
-  /// Referência opcional: mensalidade cheia após perder promo (ex. 200).
-  final double refValorMensalIntegral;
+  /// Taxa fixa manual para reteste.
+  final double taxaReteste;
+
+  /// Valor manual para multa rescisória.
+  final double multaRescisoria;
 
   static const pacoteOutros = 'Outros';
   static const statusMensalista = 'mensalista';
@@ -78,18 +84,25 @@ class FinanceiroContrato {
     pacoteOutros,
   ];
 
-  /// Valor financiado em parcelas: total − entrada − taxas.
-  double get saldoFinanciado => valorTotal - valorEntrada - taxas;
+  /// Valor com desconto de pontualidade.
+  double get valorComDescontoPontualidade =>
+      (valorMensalidade - valorPerdaPromocional).clamp(0.0, double.infinity);
+
+  /// Resumo solicitado pela operação: mensalidade − taxa de matrícula.
+  double get saldoFinanciado => valorMensalidade - taxaMatricula;
 
   bool get podeSalvarContratoBasico =>
       duracaoMeses >= 1 &&
       duracaoMeses <= 120 &&
-      valorTotal >= 0 &&
-      valorEntrada >= 0 &&
-      valorEntrada <= valorTotal &&
-      taxas >= 0 &&
-      valorTotal >= valorEntrada + taxas &&
+      valorMensalidade >= 0 &&
+      taxaMatricula >= 0 &&
+      taxaMatricula <= valorMensalidade &&
+      valorPerdaPromocional >= 0 &&
+      valorPerdaPromocional <= valorMensalidade &&
       jurosDiario >= 0 &&
+      taxaSegundaViaContrato >= 0 &&
+      taxaReteste >= 0 &&
+      multaRescisoria >= 0 &&
       (statusContrato == statusMensalista || statusContrato == statusBolsista);
 
   bool get pacoteOutrosValido =>
@@ -104,7 +117,7 @@ class FinanceiroContrato {
     if (!podeSalvarContratoBasico || !pacoteOutrosValido || !turmasHorariosValidos) {
       return false;
     }
-    if (saldoFinanciado > 0) {
+    if (valorComDescontoPontualidade > 0 || valorMensalidade > 0) {
       return duracaoMeses >= 1;
     }
     return true;

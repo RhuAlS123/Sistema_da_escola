@@ -244,15 +244,16 @@ class AlunoRepository {
       'data_primeiro_vencimento':
           Timestamp.fromDate(c.dataPrimeiroVencimento),
       'duracao_meses': c.duracaoMeses,
-      'valor_total': c.valorTotal,
-      'valor_entrada': c.valorEntrada,
-      'taxas': c.taxas,
+      'valor_mensalidade': c.valorMensalidade,
+      'taxa_matricula': c.taxaMatricula,
+      'valor_perda_promocional': c.valorPerdaPromocional,
       'status_contrato': c.statusContrato,
       'observacao': c.observacao,
       'is_locked': c.isLocked,
       'juros_diario': c.jurosDiario,
-      'ref_valor_mensal_promo': c.refValorMensalPromo,
-      'ref_valor_mensal_integral': c.refValorMensalIntegral,
+      'taxa_segunda_via_contrato': c.taxaSegundaViaContrato,
+      'taxa_reteste': c.taxaReteste,
+      'multa_rescisoria': c.multaRescisoria,
     };
   }
 
@@ -268,6 +269,9 @@ class AlunoRepository {
   }
 
   Map<String, dynamic> _migrarFinanceiroLegacy(Map<String, dynamic> old) {
+    final valorTotal = (old['valor_total'] as num?)?.toDouble() ?? 0;
+    final valorEntrada = (old['valor_entrada'] as num?)?.toDouble() ?? 0;
+    final valorPromo = (valorTotal - valorEntrada).clamp(0.0, double.infinity);
     return {
       'data_matricula': old['data_primeira_parcela'],
       'pacote': 'Completo',
@@ -278,12 +282,16 @@ class AlunoRepository {
       'turma_horario_ingles': '',
       'data_primeiro_vencimento': old['data_primeira_parcela'],
       'duracao_meses': old['num_parcelas'] ?? 1,
-      'valor_total': old['valor_total'],
-      'valor_entrada': old['valor_entrada'],
-      'taxas': 0,
+      'valor_mensalidade': valorPromo,
+      'taxa_matricula': 0.0,
+      'valor_perda_promocional': 0.0,
       'status_contrato': FinanceiroContrato.statusMensalista,
       'observacao': old['observacoes'] ?? '',
       'is_locked': old['is_locked'] == true,
+      'juros_diario': (old['juros_diario'] as num?)?.toDouble() ?? 0.0,
+      'taxa_segunda_via_contrato': 0.0,
+      'taxa_reteste': 0.0,
+      'multa_rescisoria': 0.0,
     };
   }
 
@@ -295,6 +303,17 @@ class AlunoRepository {
 
     final hoje = DateTime.now();
     final padraoDia = DateTime(hoje.year, hoje.month, hoje.day);
+    final valorMensalidade =
+        (f['valor_mensalidade'] as num?)?.toDouble() ??
+            (f['valor_total'] as num?)?.toDouble() ??
+            0;
+    final taxaMatricula =
+        (f['taxa_matricula'] as num?)?.toDouble() ??
+            (f['valor_entrada'] as num?)?.toDouble() ??
+            0;
+    final perdaPromocional =
+        (f['valor_perda_promocional'] as num?)?.toDouble() ??
+            _safePromoFallback(f);
 
     return FinanceiroContrato(
       dataMatricula: tsToDate(f['data_matricula']) ?? padraoDia,
@@ -309,18 +328,30 @@ class AlunoRepository {
       duracaoMeses: (f['duracao_meses'] as num?)?.toInt() ??
           (f['num_parcelas'] as num?)?.toInt() ??
           1,
-      valorTotal: (f['valor_total'] as num?)?.toDouble() ?? 0,
-      valorEntrada: (f['valor_entrada'] as num?)?.toDouble() ?? 0,
-      taxas: (f['taxas'] as num?)?.toDouble() ?? 0,
+      valorMensalidade: valorMensalidade,
+      taxaMatricula: taxaMatricula,
+      valorPerdaPromocional: perdaPromocional,
       statusContrato: '${f['status_contrato'] ?? FinanceiroContrato.statusMensalista}',
       observacao: '${f['observacao'] ?? f['observacoes'] ?? ''}',
       isLocked: f['is_locked'] == true,
       jurosDiario: (f['juros_diario'] as num?)?.toDouble() ?? 0,
-      refValorMensalPromo:
-          (f['ref_valor_mensal_promo'] as num?)?.toDouble() ?? 0,
-      refValorMensalIntegral:
-          (f['ref_valor_mensal_integral'] as num?)?.toDouble() ?? 0,
+      taxaSegundaViaContrato:
+          (f['taxa_segunda_via_contrato'] as num?)?.toDouble() ?? 0,
+      taxaReteste: (f['taxa_reteste'] as num?)?.toDouble() ?? 0,
+      multaRescisoria: (f['multa_rescisoria'] as num?)?.toDouble() ?? 0,
     );
+  }
+
+  double _safePromoFallback(Map<String, dynamic> f) {
+    final refPromo = (f['ref_valor_mensal_promo'] as num?)?.toDouble();
+    final refIntegral = (f['ref_valor_mensal_integral'] as num?)?.toDouble();
+    if (refPromo != null &&
+        refIntegral != null &&
+        refIntegral > refPromo &&
+        refPromo >= 0) {
+      return (refIntegral - refPromo).clamp(0.0, double.infinity);
+    }
+    return 0.0;
   }
 
   Map<String, dynamic> _parcelaToMap(ParcelaGerada p) {

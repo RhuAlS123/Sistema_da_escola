@@ -289,6 +289,10 @@ class _ParcelaEditorTileState extends ConsumerState<_ParcelaEditorTile> {
       initialDate: _dataPagamento ?? hoje,
       firstDate: DateTime(hoje.year - 2),
       lastDate: DateTime(hoje.year + 1),
+      fieldHintText: 'DD/MM/AAAA',
+      fieldLabelText: 'Digite a data',
+      errorFormatText: 'Formato inválido. Use DD/MM/AAAA.',
+      errorInvalidText: 'Data inválida.',
     );
     if (d != null) setState(() => _dataPagamento = d);
   }
